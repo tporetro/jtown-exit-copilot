@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+/* Role tokens. Components use these via the Tailwind theme below, so light
+   and dark values swap in one place. */
+:root {
+  color-scheme: light;
+  --bg: #faf6f1;
+  --surface: #ffffff;
+  --surface-2: #f4eee7;
+  --border: #e6ddd2;
+  --ink: #1f1a17;
+  --ink-2: #57504a;
+  --ink-3: #8a8178;
+  --brand: #b4441d;
+  --brand-ink: #ffffff;
+  --brand-soft: #fbe7dc;
+  --bar: #c2502a;
+  --bar-track: #efe6dc;
+  --good: #0ca30c;
+  --good-ink: #0a6e0a;
+  --warning: #fab219;
+  --warning-ink: #8a5a00;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --critical-ink: #a32828;
+  --coach-bubble: #f4eee7;
+  --me-bubble: #b4441d;
+  --me-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --bg: #141210;
+    --surface: #1d1a17;
+    --surface-2: #26221e;
+    --border: #3a342e;
+    --ink: #f2ede7;
+    --ink-2: #c9c0b6;
+    --ink-3: #91877c;
+    --brand: #e0703f;
+    --brand-ink: #1a0d06;
+    --brand-soft: #3a2218;
+    --bar: #e0703f;
+    --bar-track: #2f2a25;
+    --good-ink: #4fd04f;
+    --warning-ink: #fab219;
+    --critical-ink: #f07a7a;
+    --coach-bubble: #26221e;
+    --me-bubble: #e0703f;
+    --me-ink: #1a0d06;
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #141210;
+  --surface: #1d1a17;
+  --surface-2: #26221e;
+  --border: #3a342e;
+  --ink: #f2ede7;
+  --ink-2: #c9c0b6;
+  --ink-3: #91877c;
+  --brand: #e0703f;
+  --brand-ink: #1a0d06;
+  --brand-soft: #3a2218;
+  --bar: #e0703f;
+  --bar-track: #2f2a25;
+  --good-ink: #4fd04f;
+  --warning-ink: #fab219;
+  --critical-ink: #f07a7a;
+  --coach-bubble: #26221e;
+  --me-bubble: #e0703f;
+  --me-ink: #1a0d06;
+}
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-bar: var(--bar);
+  --color-bar-track: var(--bar-track);
+  --color-good: var(--good);
+  --color-good-ink: var(--good-ink);
+  --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-serious: var(--serious);
+  --color-critical: var(--critical);
+  --color-critical-ink: var(--critical-ink);
+  --color-coach: var(--coach-bubble);
+  --color-me: var(--me-bubble);
+  --color-me-ink: var(--me-ink);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+.listening {
+  animation: pulse-ring 1.2s ease-out infinite;
+}

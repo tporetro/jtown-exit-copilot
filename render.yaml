@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: jtown-exit-copilot
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: APP_PASSCODE
+        sync: false
