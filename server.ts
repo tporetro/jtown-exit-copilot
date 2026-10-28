@@ -36,6 +36,11 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+// Lets the browser confirm a passcode before the first real request.
+app.get('/api/auth-check', (_req, res) => {
+  res.json({ ok: true });
+});
+
 const ChatBody = z.object({
   history: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string().max(20_000) })).min(1).max(200),
   // The browser owns the state; the shape is validated by the engine's defensive reads.

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookOpen, FileText, LayoutDashboard, ListChecks, Mic, MoreHorizontal, Store, X } from 'lucide-react';
 import type { AppState } from './lib/types';
 import { exportBackup, readBackup, usePersistentState } from './lib/store';
-import { fetchHealth, setPasscode, type Health, type View } from './lib/api';
+import { checkPasscode, fetchHealth, getPasscode, setPasscode, type Health, type View } from './lib/api';
 import { useCoach } from './lib/useCoach';
 import { computeValuation, formatMoney, type Lever } from './lib/valuation';
 import { initialState } from './data/roadmap';
@@ -38,7 +38,11 @@ export default function App() {
 
   useEffect(() => {
     fetchHealth()
-      .then(setHealth)
+      .then(async (h) => {
+        setHealth(h);
+        // Ask for the passcode up front (and re-ask if a saved one stopped working).
+        if (h.passcodeRequired && !(getPasscode() && (await checkPasscode(getPasscode())))) setAskPasscode(true);
+      })
       .catch(() => setHealth({ ok: false, aiConfigured: false, passcodeRequired: false }));
   }, []);
 
@@ -216,9 +220,11 @@ export default function App() {
 
       {askPasscode && (
         <PasscodeDialog
-          onSubmit={(code) => {
+          onSubmit={async (code) => {
+            if (!(await checkPasscode(code))) return false;
             setPasscode(code);
             setAskPasscode(false);
+            return true;
           }}
         />
       )}
@@ -326,27 +332,39 @@ function Welcome({ onStart }: { onStart: (mode: 'voice' | 'type') => void }) {
   );
 }
 
-function PasscodeDialog({ onSubmit }: { onSubmit: (code: string) => void }) {
+function PasscodeDialog({ onSubmit }: { onSubmit: (code: string) => Promise<boolean> }) {
   const [code, setCode] = useState('');
+  const [wrong, setWrong] = useState(false);
+  const [checking, setChecking] = useState(false);
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
       <form
         className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-xl"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          onSubmit(code);
+          setChecking(true);
+          const ok = await onSubmit(code.trim()).catch(() => false);
+          setChecking(false);
+          setWrong(!ok);
         }}
       >
         <p className="font-semibold text-ink">Enter the app passcode</p>
-        <p className="mt-1 text-sm text-ink-2">Ask whoever set up this app for the passcode. You only need to enter it once on this device.</p>
+        <p className="mt-1 text-sm text-ink-2">You only need to enter it once on this device.</p>
         <input
           autoFocus
           type="password"
+          autoComplete="current-password"
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={(e) => {
+            setCode(e.target.value);
+            setWrong(false);
+          }}
           className="mt-4 w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink"
         />
-        <button className="mt-4 w-full rounded-xl bg-brand py-2.5 font-semibold text-brand-ink">Continue</button>
+        {wrong && <p className="mt-2 text-sm text-critical-ink">That passcode didn't work. Please try again.</p>}
+        <button disabled={checking || !code.trim()} className="mt-4 w-full rounded-xl bg-brand py-2.5 font-semibold text-brand-ink disabled:opacity-50">
+          {checking ? 'Checking…' : 'Continue'}
+        </button>
       </form>
     </div>
   );

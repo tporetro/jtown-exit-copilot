@@ -43,6 +43,11 @@ export async function fetchHealth(): Promise<Health> {
   return r.json();
 }
 
+export async function checkPasscode(code: string): Promise<boolean> {
+  const r = await fetch('/api/auth-check', { headers: { 'x-app-passcode': code } });
+  return r.ok;
+}
+
 async function errorFrom(r: Response): Promise<Error> {
   if (r.status === 401) return new PasscodeError('Passcode required');
   try {
