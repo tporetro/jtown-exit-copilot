@@ -9,6 +9,9 @@ import type { AppState } from './src/lib/types';
 
 dotenv.config();
 
+// Keys pasted into a hosting dashboard often carry a stray space or newline.
+if (process.env.ANTHROPIC_API_KEY) process.env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY.trim();
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 const PASSCODE = process.env.APP_PASSCODE;
@@ -24,6 +27,7 @@ function getClient(): Anthropic {
 const aiConfigured = () => Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
 
 app.get('/api/health', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
   res.json({ ok: true, aiConfigured: aiConfigured(), passcodeRequired: Boolean(PASSCODE) });
 });
 
@@ -131,7 +135,15 @@ async function start() {
   }
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`JTown Exit Copilot running at http://localhost:${PORT}`);
-    if (!aiConfigured()) console.warn('ANTHROPIC_API_KEY is not set — the coach and document reader are disabled.');
+    if (aiConfigured()) {
+      console.log('Claude API key found — the coach and document reader are enabled.');
+    } else {
+      // Names only, never values: helps spot a typo'd variable name in the dashboard.
+      const similar = Object.keys(process.env).filter((k) => /ANTHROPIC|CLAUDE|API_KEY/i.test(k));
+      console.warn(
+        `ANTHROPIC_API_KEY is not set — the coach and document reader are disabled.${similar.length ? ` Similar variables present: ${similar.join(', ')}` : ''}`,
+      );
+    }
   });
 }
 
